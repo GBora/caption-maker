@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caption Maker</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        #drop-zone {
+            width: 50%;
+            height: 400px;
+            border: 2px dashed #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        #drop-zone.hover {
+            border-color: #333;
+        }
+
+        img {
+            max-width: 25vw;
+            /* max-height: 100%; */
+        }
+
+        .text-imput-container {
+            width: 50%;
+            height: 400px;
+            border: 2px dashed #ccc;
+            /* margin: 50px auto; */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-zone {
+            background-color: black;
+            color: white;
+        }
+
+        .inner-text-container-left-right {
+            width: 15vw;
+            padding: 2em;
+        }
+
+        .inner-text-container-top-bottom {
+            width: 55vw;
+            padding: 2em;
+        }
+    </style>
+
+</head>
+
+<body>
+    <main class="container">
+
+        <div class="d-flex flex-row mb-1">
+            <div id="drop-zone">Drop image here</div>
+        </div>
+
+        <div style="margin-bottom: 50px;">
+            <div class="d-flex">
+
+                <div class="text-imput-container">
+                    <div class="text-center">Text Left</div>
+                    <div id="text-left-editor">
+
+                    </div>
+                </div>
+
+                <div class="text-imput-container">
+                    <div class="text-center">Text Right</div>
+                    <div id="text-right-editor">
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- <div class="d-flex">
+
+                <div class="text-imput-container">
+                    <div class="text-center">Text Top</div>
+                    <div id="text-top-editor">
+    
+                    </div>
+                </div>
+
+                <div class="text-imput-container">
+                    <div class="text-center">Text Bottom</div>
+                    <div id="text-bottom-editor">
+    
+                    </div>
+                </div>
+
+            </div> -->
+
+            <div class="d-flex mt-3">
+                <label for="image-name">Image name</label>
+                <input type="text" class="form-control mx-5" id="image-name">
+                <button type="button" class="btn btn-primary" id="capture-btn">Create</button>
+            </div>
+
+        </div>
+
+        <div class="mt-3 d-flex flex-column" id="result-area">
+            <div class="text-zone" id="text-zone-top"></div>
+            <div class="d-flex flex-row">
+                <div class="text-zone" id="text-zone-left">
+
+                </div>
+                <img id="preview" alt="Image" />
+                <div class="text-zone" id="text-zone-right"></div>
+            </div>
+            <div class="text-zone" id="text-zone-bottom"></div>
+        </div>
+
+    </main>
+
+    <script>
+        // helper function for editor
+        const addText = (textZoneId, textInnerClass, editorObj) => {
+            let textZone = document.getElementById(textZoneId);
+
+            if (!textZone.querySelector(`.${textInnerClass}`)) {
+                let newDiv = document.createElement('div');
+                newDiv.classList.add(textInnerClass);
+                textZone.appendChild(newDiv);
+            }
+
+            let innerContainer = textZone.querySelector(`.${textInnerClass}`);
+
+            innerContainer.setHTMLUnsafe(editorObj.getSemanticHTML());
+        }
+
+        var toolbarOptions = [
+            [{ 'header': [1, 2, false] }],           // Header buttons
+            ['bold', 'italic', 'underline'],         // Bold, italic, underline buttons
+            [{ 'color': [] }],                       // Color picker button
+            [{ 'align': [] }],                       // Alignment options
+            ['clean']                                // Remove formatting
+        ];
+
+        // Text part
+        const quill_left = new Quill('#text-left-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+
+        quill_left.on('text-change', () => {
+            addText('text-zone-left', 'inner-text-container-left-right', quill_left);
+        });
+
+        const quill_right = new Quill('#text-right-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+
+        quill_right.on('text-change', () => {
+            addText('text-zone-right', 'inner-text-container-left-right', quill_right);
+        })
+
+        // const quill_top = new Quill('#text-top-editor', {
+        //     theme: 'snow',
+        //     modules: {
+        //         toolbar: toolbarOptions
+        //     }
+        // });
+
+        // quill_top.on('text-change', () => {
+        //     addText('text-zone-top', 'inner-text-container-top-bottom', quill_top);
+        // })
+
+        // const quill_bottom = new Quill('#text-bottom-editor', {
+        //     theme: 'snow',
+        //     modules: {
+        //         toolbar: toolbarOptions
+        //     }
+        // });
+
+        // quill_bottom.on('text-change', () => {
+        //     addText('text-zone-bottom', 'inner-text-container-top-bottom', quill_bottom);
+        // })
+
+
+        // Image part
+        const dropZone = document.getElementById('drop-zone');
+        const preview = document.getElementById('preview');
+
+        // Prevent default behavior (Prevent file from being opened)
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight the drop zone when dragging an image
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('hover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('hover'), false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+
+                // Only process image files
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+
+                    reader.onloadend = () => {
+                        preview.src = reader.result;  // Show image
+                    };
+                } else {
+                    alert('Please drop an image file.');
+                }
+            }
+        }
+
+        document.getElementById('capture-btn').addEventListener('click', function () {
+            // Select the DOM element you want to capture
+            var captureArea = document.getElementById('result-area');
+
+            // Use html2canvas to take a screenshot of the area
+            html2canvas(captureArea).then(function (canvas) {
+                // Convert the canvas to an image
+                var img = canvas.toDataURL('image/png');
+
+
+                // Create an invisible download link
+                var downloadLink = document.createElement('a');
+                downloadLink.href = img;
+                const captionName = document.getElementById('image-name').value;
+                downloadLink.download = `${captionName}.png`;
+
+                // Programmatically trigger a click to download the image
+                document.body.appendChild(downloadLink);  // Append the link to the DOM
+                downloadLink.click();  // Trigger the download
+                document.body.removeChild(downloadLink);  // Clean up and remove the link
+            });
+        });
+    </script>
+</body>
+
+</html>
